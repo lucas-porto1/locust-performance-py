@@ -1,5 +1,6 @@
 import os
 
+from dotenv import load_dotenv
 from locust import FastHttpUser, between, task
 
 from clients.json_placeholder.comments_client import CommentsClient
@@ -13,9 +14,11 @@ from test_data.json_placeholder.payloads import (
     generate_resource_id,
 )
 
+load_dotenv()
+
 
 class JsonPlaceholderUser(FastHttpUser):
-    host = os.getenv("JSON_PLACEHOLDER_API_URL", "https://jsonplaceholder.typicode.com")
+    host = os.environ["JSON_PLACEHOLDER_API_URL"]
     wait_time = between(2, 10)
 
     def on_start(self):

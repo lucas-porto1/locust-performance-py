@@ -8,6 +8,9 @@ on:
 permissions:
   contents: read
 
+env:
+  JSON_PLACEHOLDER_API_URL: https://jsonplaceholder.typicode.com
+
 jobs:
   validate:
     runs-on: ubuntu-latest

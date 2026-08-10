@@ -23,6 +23,7 @@ A lightweight reference project for API performance testing with Locust and Pyth
 |-- .github/
 |   |-- workflows/ci.yml
 |   `-- dependabot.yml
+|-- .env.example
 |-- clients/
 |   `-- json_placeholder/
 |       |-- comments_client.py
@@ -54,6 +55,7 @@ A lightweight reference project for API performance testing with Locust and Pyth
 - `test_data/<service>/`: payload factories and dynamic service data.
 - `profiles/`: reusable workload settings that are not tied to one service.
 - `load_shapes/`: custom workload curves for stress and spike tests.
+- `.env.example`: documented environment variables with safe example values.
 
 ## JSONPlaceholder Example
 
@@ -126,6 +128,18 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+Create the local environment file:
+
+```powershell
+# Windows PowerShell
+Copy-Item .env.example .env
+```
+
+```bash
+# macOS or Linux
+cp .env.example .env
+```
+
 ## Running the Profiles
 
 Static profiles reuse the same Locust user file:
@@ -152,18 +166,26 @@ The example values are intentionally small and do not represent production capac
 
 ### Target Environment
 
-The host is defined in `locustfiles/json_placeholder.py` with a public default and an environment-variable override:
+The project loads `.env` automatically with `python-dotenv`. Change the target locally in `.env`:
 
-```python
-host = os.getenv("JSON_PLACEHOLDER_API_URL", "https://jsonplaceholder.typicode.com")
+```env
+JSON_PLACEHOLDER_API_URL=https://your-environment.example.com
 ```
 
-Override it without changing code:
+The Locust user requires that value, preventing performance tests from accidentally running against an unintended environment:
+
+```python
+host = os.environ["JSON_PLACEHOLDER_API_URL"]
+```
+
+An operating-system environment variable can still override `.env` because `load_dotenv()` does not replace existing variables:
 
 ```powershell
 $env:JSON_PLACEHOLDER_API_URL="https://your-environment.example.com"
 locust -f locustfiles/json_placeholder.py --config profiles/load.conf
 ```
+
+The variable is required. Copy `.env.example` to `.env` before running the project locally. Do not commit `.env`; it is already ignored by Git and only `.env.example` should be versioned.
 
 ## Reusing Profiles Across Services
 
@@ -214,7 +236,9 @@ ruff format .
 
 ## Continuous Integration
 
-GitHub Actions runs only the generic smoke profile with the included JSONPlaceholder user. Full load, peak, stress, spike, concurrency, and soak tests remain intentional executions to avoid accidental load on shared environments.
+GitHub Actions passes the public `JSON_PLACEHOLDER_API_URL` directly through the workflow `env` section and does not depend on a local `.env` file. For real projects, use GitHub Variables for non-sensitive URLs and GitHub Secrets for tokens or credentials.
+
+The workflow runs only the generic smoke profile with the included JSONPlaceholder user. Full load, peak, stress, spike, concurrency, and soak tests remain intentional executions to avoid accidental load on shared environments.
 
 ## Responsible Use
 
