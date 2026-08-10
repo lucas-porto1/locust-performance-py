@@ -1,7 +1,15 @@
 venv/
+.venv/
 env/
 .env
 __pycache__/
 *.py[cod]
-.ruff_cache
-jsonPlaceholder.html
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*-report.html
+*_stats.csv
+*_failures.csv
+*_exceptions.csv
+*_stats_history.csv

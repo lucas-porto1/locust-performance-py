@@ -1,2 +1,3 @@
-locust
-faker
+locust==2.46.3
+Faker==40.36.0
+ruff==0.16.2
