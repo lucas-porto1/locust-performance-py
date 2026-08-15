@@ -1,9 +1,11 @@
 name: CI
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
@@ -15,6 +17,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      report-artifact-id: ${{ steps.pages-artifact.outputs.artifact_id }}
 
     steps:
       - name: Checkout repository
@@ -45,3 +49,50 @@ jobs:
 
       - name: Run Locust smoke test
         run: locust -f locustfiles/json_placeholder.py --config profiles/smoke.conf --only-summary
+
+      - name: Upload failure report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: locust-failure-report
+          path: smoke-report.html
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Prepare HTML report for GitHub Pages
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('smoke-report.html') != ''
+        run: |
+          mkdir -p reports/html
+          cp smoke-report.html reports/html/index.html
+
+      - name: Upload HTML report for GitHub Pages
+        id: pages-artifact
+        if: always() && github.ref == 'refs/heads/main' && hashFiles('reports/html/index.html') != ''
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: reports/html
+
+  publish-report:
+    name: Publish HTML report
+    needs: validate
+    if: always() && github.ref == 'refs/heads/main' && needs.validate.outputs.report-artifact-id != ''
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy report to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+      - name: Add report link to the job summary
+        env:
+          REPORT_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          echo '## Locust smoke test report' >> "$GITHUB_STEP_SUMMARY"
+          echo "[Open the latest HTML report]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"

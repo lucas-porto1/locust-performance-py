@@ -8,6 +8,7 @@ __pycache__/
 .ruff_cache/
 .coverage
 htmlcov/
+/reports/
 *-report.html
 *_stats.csv
 *_failures.csv

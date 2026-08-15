@@ -242,11 +242,19 @@ ruff format .
 5. Reuse a profile and add an override only when the workload is different.
 6. Define performance thresholds from the real system SLA before using the test as a release gate.
 
+## Reports
+
+Each included profile writes a standalone HTML report in the repository root. The smoke profile creates `smoke-report.html`; other profiles follow the same `<profile>-report.html` naming pattern. The latest CI smoke report from `main` is available at [lucas-porto1.github.io/locust-performance-py](https://lucas-porto1.github.io/locust-performance-py/).
+
 ## Continuous integration
 
 GitHub Actions passes the public `JSON_PLACEHOLDER_API_URL` directly through the workflow `env` section and does not depend on a local `.env` file. For real projects, use GitHub Variables for non-sensitive URLs and GitHub Secrets for tokens or credentials.
 
-The workflow runs only the generic smoke profile with the included JSONPlaceholder user. Full load, peak, stress, spike, concurrency, and soak tests remain intentional executions to avoid accidental load on shared environments.
+The workflow runs only the generic smoke profile with the included JSONPlaceholder user. Full load, peak, stress, spike, concurrency, and soak tests remain intentional executions to avoid accidental load on shared environments. Runs on `main` publish the smoke HTML report to GitHub Pages and add its direct URL to the job summary. Pull requests do not replace the published report; a failed smoke run retains its report as a short-lived artifact for diagnosis.
+
+Before the first deployment, select **GitHub Actions** as the Pages source under the repository's **Settings > Pages**.
+
+Performance reports expose targets, timings, routes, and failure details. Disable public Pages publishing or use access-controlled reporting infrastructure before reusing this setup with sensitive client systems.
 
 ## Responsible use
 
