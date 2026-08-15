@@ -1,12 +1,20 @@
-# Locust Performance Testing Template
+# Locust Performance — Python Reference
 
-[![Python](https://img.shields.io/badge/Python-3.14.7-blue.svg)](https://www.python.org/)
-[![Locust](https://img.shields.io/badge/Locust-2.46.3-orange.svg)](https://locust.io/)
-[![CI](https://github.com/lucas-porto1/locust-performance-py/actions/workflows/ci.yml/badge.svg)](https://github.com/lucas-porto1/locust-performance-py/actions/workflows/ci.yml)
+[![CI](https://github.com/lucas-porto1/locust-performance-py/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lucas-porto1/locust-performance-py/actions/workflows/ci.yml)
+
+_Part of [Lucas Porto's QA Automation Reference Collection](https://github.com/lucas-porto1): QA-first templates built for readability, reproducibility, and sustainable maintenance._
 
 A lightweight reference project for API performance testing with Locust and Python. It uses [JSONPlaceholder](https://jsonplaceholder.typicode.com/) to demonstrate service organization, reusable workload profiles, and common HTTP operations without unnecessary framework layers.
 
-## What This Template Demonstrates
+## Design principles
+
+- **Model realistic behavior:** task weights and wait times represent concurrent user activity rather than isolated requests.
+- **Separate behavior from workload:** Locust user files define what users do, while reusable profiles and load shapes define how traffic is applied.
+- **Keep HTTP clients focused:** clients group requests by service and resource without introducing application-style service layers.
+- **Keep targets explicit:** environment configuration prevents accidental execution against an unintended system.
+- **Use safe defaults:** examples remain intentionally small, and heavier workloads require deliberate execution.
+
+## What this template demonstrates
 
 - Reusable smoke, baseline, load, peak, concurrency, stress, spike, and soak profiles.
 - Weighted user behavior with concurrent virtual users.
@@ -16,7 +24,7 @@ A lightweight reference project for API performance testing with Locust and Pyth
 - Stable metric names for endpoints containing dynamic IDs.
 - Automated linting and a short CI smoke test.
 
-## Project Structure
+## Project structure
 
 ```text
 .
@@ -57,7 +65,7 @@ A lightweight reference project for API performance testing with Locust and Pyth
 - `load_shapes/`: custom workload curves for stress and spike tests.
 - `.env.example`: documented environment variables with safe example values.
 
-## JSONPlaceholder Example
+## JSONPlaceholder example
 
 JSONPlaceholder exposes six resources: posts, comments, albums, photos, todos, and users. This template intentionally uses only three to demonstrate how a service can be divided without adding every available endpoint.
 
@@ -71,7 +79,7 @@ The provider also supports routes such as `/albums/{id}/photos`, `/users/{id}/al
 
 Use one client file per meaningful resource or domain inside a service. Do not create one file for every individual endpoint.
 
-## Performance Test Types
+## Performance test types
 
 | Type | Purpose |
 | --- | --- |
@@ -86,7 +94,7 @@ Use one client file per meaningful resource or domain inside a service. Do not c
 
 Performance testing is the broader category. The profiles above represent different workload strategies within it.
 
-## User Behavior and Concurrency
+## User behavior and concurrency
 
 Read operations have a higher weight than write operations. Each virtual user independently selects a task and waits between 2 and 10 seconds before selecting the next one.
 
@@ -98,7 +106,7 @@ Read operations have a higher weight than write operations. Each virtual user in
 
 With multiple users, different clients, methods, and routes run concurrently. One user can request `/posts` while others create a comment, request a user, or retrieve `/users/{id}/todos`.
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
@@ -140,7 +148,7 @@ Copy-Item .env.example .env
 cp .env.example .env
 ```
 
-## Running the Profiles
+## Running the profiles
 
 Static profiles reuse the same Locust user file:
 
@@ -164,7 +172,7 @@ The stress shape increases from 10 to 50 users over five cumulative stages. The 
 
 The example values are intentionally small and do not represent production capacity. A real soak test commonly runs for several hours.
 
-### Target Environment
+### Target environment
 
 The project loads `.env` automatically with `python-dotenv`. Change the target locally in `.env`:
 
@@ -187,7 +195,7 @@ locust -f locustfiles/json_placeholder.py --config profiles/load.conf
 
 The variable is required. Copy `.env.example` to `.env` before running the project locally. Do not commit `.env`; it is already ignored by Git and only `.env.example` should be versioned.
 
-## Reusing Profiles Across Services
+## Reusing profiles across services
 
 Profiles describe workload, not APIs. A project with many services should reuse the same files:
 
@@ -210,7 +218,7 @@ Generic profiles reuse report filenames. Override the report name when running m
 locust -f locustfiles/catalog.py --config profiles/load.conf --html catalog-load-report.html
 ```
 
-## Code Quality
+## Code quality
 
 ```bash
 pip install -r requirements.txt
@@ -225,7 +233,7 @@ ruff check . --fix
 ruff format .
 ```
 
-## Adapting the Template
+## Adapting the template
 
 1. Add a directory under `clients/` for the service.
 2. Split a large service client by resource or domain when it improves navigation.
@@ -234,12 +242,12 @@ ruff format .
 5. Reuse a profile and add an override only when the workload is different.
 6. Define performance thresholds from the real system SLA before using the test as a release gate.
 
-## Continuous Integration
+## Continuous integration
 
 GitHub Actions passes the public `JSON_PLACEHOLDER_API_URL` directly through the workflow `env` section and does not depend on a local `.env` file. For real projects, use GitHub Variables for non-sensitive URLs and GitHub Secrets for tokens or credentials.
 
 The workflow runs only the generic smoke profile with the included JSONPlaceholder user. Full load, peak, stress, spike, concurrency, and soak tests remain intentional executions to avoid accidental load on shared environments.
 
-## Responsible Use
+## Responsible use
 
 Only run performance tests against systems you own or are explicitly authorized to test. Start with a small workload and increase it gradually while monitoring the target environment.
